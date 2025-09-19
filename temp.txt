@@ -1,0 +1,21 @@
+psql --username=myuser -d subscriptionservice
+
+CREATE DATABASE subscriptionservice;
+
+\c subscriptionservice
+
+CREATE SCHEMA infosub;
+
+CREATE USER myuser WITH PASSWORD '123';
+
+GRANT USAGE ON SCHEMA infosub TO myuser;
+GRANT CREATE ON SCHEMA infosub TO myuser;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA infosub TO myuser;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA infosub TO myuser; 
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA infosub GRANT ALL ON TABLES TO myuser;
+ALTER DEFAULT PRIVILEGES IN SCHEMA infosub GRANT ALL ON SEQUENCES TO myuser;
+
+GRANT ALL PRIVILEGES ON DATABASE subscriptionservice TO myuser;
+GRANT USAGE, CREATE ON SCHEMA infosub TO myuser;
+
