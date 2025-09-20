@@ -13,12 +13,12 @@ type SubscriptionDB struct {
 	DB *sql.DB
 }
 type Subscription struct {
-	ID          int        `json: "id"`
-	ServiceName string     `json: "service_name"`
-	Price       int        `json: "price"`
-	UserID      uuid.UUID  `json: "user_id"`
-	StartDate   time.Time  `json: "start_date"`
-	EndDate     *time.Time `json: "end_date,omitempty"`
+	ID          int        `json:"id"`
+	ServiceName string     `json:"service_name"`
+	Price       int        `json:"price"`
+	UserID      uuid.UUID  `json:"user_id"`
+	StartDate   time.Time  `json:"start_date"`
+	EndDate     *time.Time `json:"end_date,omitempty"`
 }
 
 //********************************************************************//
@@ -99,33 +99,6 @@ func (m *SubscriptionDB) GetByUserID(uid uuid.UUID) ([]*Subscription, error) {
 	}
 	return subscriptions, nil
 }
-
-//func (m *SubscriptionDB) GetByUserSubscription(serviceName string) ([]*Subscription, error) {
-//	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-//	defer cancel()
-//
-//	query := `SELECT id, service_name, price, user_id, start_date, end_date FROM infosub.subscriptions WHERE service_name = $1`
-//	rows, err := m.DB.QueryContext(ctx, query, serviceName)
-//	if err != nil {
-//		return nil, err
-//	}
-//	defer rows.Close()
-//	subscriptions := []*Subscription{}
-//	for rows.Next() {
-//		var sub Subscription
-//		err := rows.Scan(&sub.ID, &sub.ServiceName, &sub.Price, &sub.UserID, &sub.StartDate, &sub.EndDate)
-//		if err != nil {
-//			return nil, err
-//		}
-//
-//		subscriptions = append(subscriptions, &sub)
-//	}
-//
-//	if err := rows.Err(); err != nil {
-//		return nil, err
-//	}
-//	return subscriptions, nil
-//}
 
 func (m *SubscriptionDB) GetByUserSubscription(serviceName string) ([]*Subscription, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)

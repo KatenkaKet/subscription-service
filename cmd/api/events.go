@@ -5,29 +5,11 @@ import (
 	"net/http"
 	"strconv"
 	"subscription-service/internal/models"
-
 	_ "subscription-service/internal/models"
 
 	"github.com/gin-gonic/gin"
 	uuid "github.com/jackc/pgtype/ext/gofrs-uuid"
 )
-
-//func (app *application) createRecord(c *gin.Context) {
-//	var sub models.Subscription
-//
-//	if err := c.ShouldBindJSON(&sub); err != nil {
-//		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-//		return
-//	}
-//
-//	err := app.allModels.Subscriptions.Insert(&sub)
-//
-//	if err != nil {
-//		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create record about subscription"})
-//		return
-//	}
-//	c.JSON(http.StatusCreated, gin.H{"data": sub})
-//}
 
 //********************************************************************//
 //  							 READ								  //
@@ -97,15 +79,22 @@ func (app *application) getRecordsByServiceName(c *gin.Context) {
 //********************************************************************//
 
 func (app *application) createRecord(c *gin.Context) {
-	var sub models.Subscription
+	var mid models.MidwaySub
 
-	if err := c.ShouldBindJSON(&sub); err != nil {
+	if err := c.ShouldBindJSON(&mid); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	sub, err := mid.FromMidwaySub()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	// ДОБАВИТЬ ПРОВЕРКУ, ЧТОБЫ НЕ БЫЛО ДУБЛИКАТОВ
 
-	err := app.allModels.Subscriptions.Insert(&sub)
+	err = app.allModels.Subscriptions.Insert(&sub)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create record about the subscription"})
 		return
@@ -169,36 +158,32 @@ func (app *application) deleteRecordsByServiceName(c *gin.Context) {
 func (app *application) updateRecordByID(c *gin.Context) {
 	var sub models.Subscription
 
+	var mid models.MidwaySub
+	if err := c.ShouldBindJSON(&mid); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	sub, err := mid.FromMidwaySub()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 	sub.ID = id
 
-	serviceName := c.Param("service_name")
-	sub.ServiceName = serviceName
-
-	priceStr := c.Param("price")
-	price, err := strconv.Atoi(priceStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	}
-	sub.Price = price
-
-	userIdStr := c.Param("user_id")
-	var userId uuid.UUID
-	if err := userId.Scan(userIdStr); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
-		return
-	}
-	sub.UserID = userId
-
-	// ДОБАВИТЬ ДАТЫ!!!
+	// ДОБАВИТЬ ПРОВЕРКУ, ЧТОБЫ НЕ БЫЛО ДУБЛИКАТОВ
 
 	err = app.allModels.Subscriptions.Update(sub)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update record about the subscription"})
+		return
 	}
 	c.JSON(http.StatusOK, sub)
 }
