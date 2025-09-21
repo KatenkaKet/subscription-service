@@ -20,6 +20,8 @@ func (app *application) routes() http.Handler {
 		r.DELETE("/user/:id", app.deleteRecordByUserID)
 		r.DELETE("/service/:name", app.deleteRecordsByServiceName)
 		r.POST("/newrecord", app.createRecord)
+
+		r.GET("/summary", app.getRecordsByFilter)
 	}
 
 	return g

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"subscription-service/internal/models"
 	_ "subscription-service/internal/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	uuid "github.com/jackc/pgtype/ext/gofrs-uuid"
@@ -186,4 +187,43 @@ func (app *application) updateRecordByID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, sub)
+}
+
+//********************************************************************//
+//  							 Filter								  //
+//********************************************************************//
+
+func (app *application) getRecordsByFilter(c *gin.Context) {
+	fromStr := c.Query("from")
+	toStr := c.Query("to")
+	userID := c.Query("user_id")
+	serviceName := c.Query("service_name")
+
+	if fromStr == "" || toStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "from and to parameters are required"})
+		return
+	}
+
+	from, err := time.Parse("01-2006", fromStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid from date format. Use MM-YYYY"})
+		return
+	}
+
+	to, err := time.Parse("01-2006", toStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid to date format. Use MM-YYYY"})
+		return
+	}
+
+	subscriptions, totalCost, err := app.allModels.Subscriptions.GetSummary(from, to, userID, serviceName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to calculate summary"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"total_cost":    totalCost,
+		"subscriptions": subscriptions,
+	})
 }
