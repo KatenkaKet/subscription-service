@@ -4,5 +4,6 @@ CREATE TABLE IF NOT EXISTS infosub.subscriptions (
      price INTEGER NOT NULL,
      user_id UUID NOT NULL,
      start_date DATE NOT NULL,
-     end_date DATE
+     end_date DATE,
+     CONSTRAINT unique_service_user UNIQUE (service_name, user_id)
 );

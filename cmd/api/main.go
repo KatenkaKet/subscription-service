@@ -17,7 +17,7 @@ type application struct {
 }
 
 func main() {
-	db, err := sql.Open("pgx", "postgres://myuser:123@localhost:5432/subscription_service?sslmode=disable")
+	db, err := sql.Open("pgx", env.GetPostgresDSN())
 	if err != nil {
 		log.Fatal(err)
 	}

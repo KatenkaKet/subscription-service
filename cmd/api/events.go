@@ -93,11 +93,9 @@ func (app *application) createRecord(c *gin.Context) {
 		return
 	}
 
-	// ДОБАВИТЬ ПРОВЕРКУ, ЧТОБЫ НЕ БЫЛО ДУБЛИКАТОВ
-
 	err = app.allModels.Subscriptions.Insert(&sub)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create record about the subscription"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully created record about the subscription"})
@@ -178,8 +176,6 @@ func (app *application) updateRecordByID(c *gin.Context) {
 		return
 	}
 	sub.ID = id
-
-	// ДОБАВИТЬ ПРОВЕРКУ, ЧТОБЫ НЕ БЫЛО ДУБЛИКАТОВ
 
 	err = app.allModels.Subscriptions.Update(sub)
 	if err != nil {

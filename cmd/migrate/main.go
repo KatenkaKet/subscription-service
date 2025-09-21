@@ -2,8 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
+	"subscription-service/internal/env"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -17,7 +19,7 @@ func main() {
 
 	direction := os.Args[1]
 
-	db, err := sql.Open("postgres", "postgres://myuser:123@localhost:5432/subscription_service?sslmode=disable")
+	db, err := sql.Open("postgres", env.GetPostgresDSN())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,7 +50,20 @@ func main() {
 		if err := m.Down(); err != nil && err != migrate.ErrNoChange {
 			log.Fatal(err)
 		}
+	case "force":
+		if len(os.Args) < 3 {
+			log.Fatal("Please provide a version number to force")
+		}
+		var version uint
+		_, err := fmt.Sscan(os.Args[2], &version)
+		if err != nil {
+			log.Fatal("Invalid version number")
+		}
+		if err := m.Force(int(version)); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("Database dirty state cleared. Forced version: %d\n", version)
 	default:
-		log.Fatal("Please provide a migration direction: 'up' or 'down'")
+		log.Fatal("Please provide a migration direction: 'up', 'down' or 'force'")
 	}
 }
