@@ -1,0 +1,15 @@
+# Dockerfile.migrate
+FROM golang:1.25-alpine
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+# Устанавливаем клиент Postgres для pg_isready (опционально)
+RUN apk add --no-cache postgresql-client
+
+# Команда по умолчанию
+CMD ["go", "run", "./cmd/migrate/main.go", "up"]
