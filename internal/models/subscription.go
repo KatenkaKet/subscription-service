@@ -169,8 +169,13 @@ func (m *SubscriptionDB) Delete(id int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
+	_, err := m.Get(id)
+	if err != nil {
+		return err
+	}
+
 	query := `DELETE FROM infosub.subscriptions WHERE id = $1`
-	_, err := m.DB.ExecContext(ctx, query, id)
+	_, err = m.DB.ExecContext(ctx, query, id)
 	return err
 }
 
@@ -200,8 +205,13 @@ func (m *SubscriptionDB) Update(upd Subscription) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
+	_, err := m.Get(upd.ID)
+	if err != nil {
+		return err
+	}
+
 	query := `UPDATE infosub.subscriptions SET service_name = $1, price = $2,user_id = $3, start_date = $4, end_date = $5 WHERE id = $6`
-	_, err := m.DB.ExecContext(
+	_, err = m.DB.ExecContext(
 		ctx, query,
 		upd.ServiceName,
 		upd.Price,
@@ -246,6 +256,11 @@ func (m *SubscriptionDB) GetSummary(from, to time.Time, userID, serviceName stri
 
 		dateFrom := maxTime(sub.StartDate, from)
 		dateTo := minTimePtr(sub.EndDate, to)
+
+		if dateFrom.After(dateTo) {
+			continue
+		}
+
 		cost = monthsDiff(dateFrom, dateTo) * sub.Price
 		totalcost += cost
 
